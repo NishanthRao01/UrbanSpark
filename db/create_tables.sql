@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS comments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idea_id INT NOT NULL,
+    user_name VARCHAR(100) NOT NULL,
+    comment_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    likes INT DEFAULT 0,
+    FOREIGN KEY (idea_id) REFERENCES ideas(id) ON DELETE CASCADE
+); 

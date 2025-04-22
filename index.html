@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UrbanSpark – Ignite Ideas for a Smarter City</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://imgs.search.brave.com/nI_2-S0JtWt7wtDxkYJ7L-JnyQhplirwC1CGlV57h1o/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTM5/NTkyNjM1MS9waG90/by9kaWdpdGFsLXVy/YmFuLXNreWxpbmUu/anBnP3M9NjEyeDYx/MiZ3PTAmaz0yMCZj/PXVrSkFTV0EtRGZ6/TFJUdnNlVmF6a091/aENEMS1nYzdEZUs2/MHhUM01mUUE9');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .glow-text {
+            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        .feature-card {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: perspective(1000px) rotateX(0deg);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-card:hover {
+            transform: perspective(1000px) rotateX(10deg) scale(1.05);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .feature-icon {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: inline-block;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .feature-icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .feature-card:hover .feature-icon::after {
+            transform: translate(-50%, -50%) scale(2);
+            opacity: 1;
+        }
+
+        .feature-content {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feature-card:hover .feature-content {
+            transform: translateY(-5px);
+        }
+
+        .feature-card.active {
+            transform: perspective(1000px) rotateX(0deg) scale(1.1);
+            box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .feature-card.active .feature-details {
+            max-height: 300px;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feature-bullet {
+            transition: all 0.3s ease;
+            transform: translateX(-10px);
+            opacity: 0;
+        }
+
+        .feature-card.active .feature-bullet {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .feature-bullet:nth-child(1) { transition-delay: 0.1s; }
+        .feature-bullet:nth-child(2) { transition-delay: 0.2s; }
+        .feature-bullet:nth-child(3) { transition-delay: 0.3s; }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .floating-card {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .cta-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .cta-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .cta-button:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .nav-link {
+            @apply text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200;
+        }
+
+        .nav-link.active {
+            @apply text-blue-600 bg-blue-50;
+        }
+
+        .stats-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white/90 backdrop-blur-sm z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-city text-blue-600 text-2xl mr-2"></i>
+                        <a href="index.html" class="text-2xl font-bold text-blue-600">UrbanSpark</a>
+                    </div>
+                   
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="admin/login.php" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        <i class="fas fa-user-shield mr-2"></i>
+                        Admin Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section flex items-center justify-center">
+        <div class="text-center text-white px-4" data-aos="fade-up">
+            <h1 class="text-6xl font-bold mb-6 glow-text">UrbanSpark</h1>
+            <p class="text-2xl mb-8 floating">Your ideas today, a better city tomorrow.</p>
+            <a href="submit.php" class="cta-button inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-12 rounded-full text-lg transition-all duration-300 transform hover:scale-105">
+                Submit Your Idea
+            </a>
+        </div>
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down text-white text-2xl"></i>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+        <div class="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <h2 class="text-4xl font-bold text-center mb-16" data-aos="fade-up">Why Choose UrbanSpark?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="feature-card bg-white p-8 rounded-lg shadow-lg floating-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-icon">
+                        <i class="fas fa-lightbulb text-5xl text-blue-600 mb-6"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3 class="text-2xl font-bold mb-4">Share Your Vision</h3>
+                        <p class="text-gray-600">Contribute innovative ideas to improve our city's infrastructure and services.</p>
+                    </div>
+                    <div class="feature-details mt-4">
+                        <ul class="text-gray-600 space-y-2">
+                            <li class="feature-bullet flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Easy submission process
+                            </li>
+                            <li class="feature-bullet flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Real-time feedback
+                            </li>
+                            <li class="feature-bullet flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Community voting
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="feature-card bg-white p-8 rounded-lg shadow-lg floating-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line text-5xl text-green-600 mb-6"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3 class="text-2xl font-bold mb-4">Track Progress</h3>
+                        <p class="text-gray-600">Monitor the impact of implemented ideas through real-time statistics.</p>
+                    </div>
+                    <div class="feature-details mt-4">
+                        <ul class="text-gray-600 space-y-2">
+                            <li class="feature-bullet flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Live updates
+                            </li>
+                            <li class="feature-bullet flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Detailed analytics
+                            </li>
+                            <li class="feature-bullet flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Impact metrics
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="feature-card bg-white p-8 rounded-lg shadow-lg floating-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-icon">
+                        <i class="fas fa-users text-5xl text-purple-600 mb-6"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3 class="text-2xl font-bold mb-4">Community Driven</h3>
+                        <p class="text-gray-600">Join a community of citizens working together to build a smarter city.</p>
+                    </div>
+                    <div class="feature-details mt-4">
+                        <ul class="text-gray-600 space-y-2">
+                            <li class="feature-bullet flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Active discussions
+                            </li>
+                            <li class="feature-bullet flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Collaborative projects
+                            </li>
+                            <li class="feature-bullet flex items-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Local events
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats" class="py-20 bg-gradient-to-b from-white to-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-bold text-center mb-16" data-aos="fade-up">City Statistics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="stats-card p-6 rounded-lg text-center" data-aos="fade-up" data-aos-delay="100">
+                    <i class="fas fa-car text-4xl text-blue-600 mb-4"></i>
+                    <h3 class="text-3xl font-bold mb-2">85%</h3>
+                    <p class="text-gray-600">Traffic Flow</p>
+                </div>
+                <div class="stats-card p-6 rounded-lg text-center" data-aos="fade-up" data-aos-delay="200">
+                    <i class="fas fa-tint text-4xl text-blue-600 mb-4"></i>
+                    <h3 class="text-3xl font-bold mb-2">1200</h3>
+                    <p class="text-gray-600">Water Usage (m³)</p>
+                </div>
+                <div class="stats-card p-6 rounded-lg text-center" data-aos="fade-up" data-aos-delay="300">
+                    <i class="fas fa-bolt text-4xl text-blue-600 mb-4"></i>
+                    <h3 class="text-3xl font-bold mb-2">800</h3>
+                    <p class="text-gray-600">Energy Usage (kWh)</p>
+                </div>
+                <div class="stats-card p-6 rounded-lg text-center" data-aos="fade-up" data-aos-delay="400">
+                    <i class="fas fa-truck text-4xl text-blue-600 mb-4"></i>
+                    <h3 class="text-3xl font-bold mb-2">75%</h3>
+                    <p class="text-gray-600">Delivery Efficiency</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">UrbanSpark</h3>
+                    <p class="text-gray-400">Your ideas today, a better city tomorrow.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition">Home</a></li>
+                        <li><a href="submit.php" class="text-gray-400 hover:text-white transition">Submit Idea</a></li>
+                        <li><a href="ideas.php" class="text-gray-400 hover:text-white transition">Ideas Gallery</a></li>
+                        <li><a href="stats.html" class="text-gray-400 hover:text-white transition">Statistics</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">Connect With Us</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-400">
+                <p>&copy; 2024 UrbanSpark. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Feature Cards Interaction
+        document.querySelectorAll('.feature-card').forEach(card => {
+            // Hover effect
+            card.addEventListener('mouseenter', () => {
+                card.classList.add('active');
+                createParticles(card);
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.classList.remove('active');
+            });
+
+            // Click effect
+            card.addEventListener('click', () => {
+                // Remove active class from all cards
+                document.querySelectorAll('.feature-card').forEach(c => {
+                    c.classList.remove('active');
+                });
+                // Add active class to clicked card
+                card.classList.add('active');
+            });
+        });
+
+        // Particle effect
+        function createParticles(card) {
+            const particles = [];
+            const particleCount = 10;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const size = Math.random() * 5 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                const cardRect = card.getBoundingClientRect();
+                const x = Math.random() * cardRect.width;
+                const y = Math.random() * cardRect.height;
+                
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                
+                card.appendChild(particle);
+                particles.push(particle);
+                
+                // Animate particle
+                setTimeout(() => {
+                    particle.style.opacity = '1';
+                    particle.style.transform = `translate(${Math.random() * 100 - 50}px, ${Math.random() * 100 - 50}px) scale(0)`;
+                    particle.style.transition = 'all 0.5s ease';
+                    
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 500);
+                }, 0);
+            }
+        }
+
+        // Parallax effect for feature cards
+        window.addEventListener('scroll', () => {
+            const cards = document.querySelectorAll('.feature-card');
+            const scrollPosition = window.scrollY;
+
+            cards.forEach((card, index) => {
+                const cardTop = card.getBoundingClientRect().top;
+                const cardBottom = card.getBoundingClientRect().bottom;
+                const windowHeight = window.innerHeight;
+
+                if (cardTop < windowHeight && cardBottom > 0) {
+                    const distanceFromCenter = (cardTop + cardBottom) / 2 - windowHeight / 2;
+                    const moveDistance = distanceFromCenter * 0.1;
+                    const rotation = moveDistance * 0.1;
+                    
+                    if (!card.classList.contains('active')) {
+                        card.style.transform = `perspective(1000px) rotateX(${rotation}deg) translateY(${moveDistance}px)`;
+                    }
+                }
+            });
+        });
+
+        // Intersection Observer for feature cards
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.feature-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Navbar background change on scroll
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('bg-white');
+                nav.classList.remove('bg-white/90');
+            } else {
+                nav.classList.remove('bg-white');
+                nav.classList.add('bg-white/90');
+            }
+        });
+
+        // Highlight active navigation link
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath.split('/').pop()) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

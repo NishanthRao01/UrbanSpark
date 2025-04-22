@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics - UrbanSpark</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+        .chart-container {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease;
+        }
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+        .stats-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="index.html" class="text-2xl font-bold text-blue-600">UrbanSpark</a>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="index.html" class="nav-link">Home</a>
+                        <a href="submit.php" class="nav-link">Submit Idea</a>
+                        <a href="ideas.php" class="nav-link">Ideas Gallery</a>
+                        <a href="stats.html" class="nav-link bg-blue-100 text-blue-600 hover:bg-blue-200">Statistics</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <a href="admin/login.php" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        Admin Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-10 pb-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl font-bold text-center mb-12">City Innovation Statistics</h1>
+            
+            <!-- Impact Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="stats-card">
+                    <h3 class="text-lg font-semibold mb-2">Average People Impacted</h3>
+                    <div class="text-3xl font-bold text-blue-600" id="avgPeopleAffected">Loading...</div>
+                </div>
+                <div class="stats-card">
+                    <h3 class="text-lg font-semibold mb-2">Average Cost Savings</h3>
+                    <div class="text-3xl font-bold text-green-600" id="avgCostSavings">Loading...</div>
+                </div>
+                <div class="stats-card">
+                    <h3 class="text-lg font-semibold mb-2">Environmental Impact</h3>
+                    <div class="text-3xl font-bold text-emerald-600" id="avgEnvironmentalImpact">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div class="chart-container">
+                    <h2 class="text-xl font-semibold mb-4">Ideas by Category</h2>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2 class="text-xl font-semibold mb-4">Implementation Timeline</h2>
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="chart-container">
+                    <h2 class="text-xl font-semibold mb-4">Idea Status Distribution</h2>
+                    <canvas id="statusChart"></canvas>
+                </div>
+                <div class="chart-container flex items-center justify-center">
+                    <div class="text-center">
+                        <h2 class="text-xl font-semibold mb-4">Auto-refresh Status</h2>
+                        <div class="text-gray-600" id="lastUpdate">Last updated: Never</div>
+                        <button onclick="fetchStats()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300">
+                            Refresh Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let charts = {
+            category: null,
+            timeline: null,
+            status: null
+        };
+        
+        let eventSource;
+        
+        function connectEventSource() {
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            eventSource = new EventSource('php/stats_stream.php');
+            
+            eventSource.onopen = function() {
+                console.log('Connected to event stream');
+                document.getElementById('connectionStatus').textContent = 'Connected';
+                document.getElementById('connectionStatus').className = 'text-green-600';
+            };
+            
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.error) {
+                    console.error('Stream error:', data.error);
+                    return;
+                }
+                updateCharts(data);
+            };
+            
+            eventSource.onerror = function() {
+                console.log('Event source connection lost');
+                document.getElementById('connectionStatus').textContent = 'Disconnected - Reconnecting...';
+                document.getElementById('connectionStatus').className = 'text-red-600';
+                eventSource.close();
+                // Try to reconnect after 5 seconds
+                setTimeout(connectEventSource, 5000);
+            };
+        }
+
+        function formatNumber(num) {
+            return new Intl.NumberFormat('en-IN').format(num);
+        }
+
+        function updateCharts(data) {
+            // Update impact statistics
+            document.getElementById('avgPeopleAffected').textContent = 
+                formatNumber(Math.round(data.impact.avg_people_affected || 0)) + ' people';
+            document.getElementById('avgCostSavings').textContent = 
+                '₹' + formatNumber(Math.round(data.impact.avg_cost_savings || 0));
+            document.getElementById('avgEnvironmentalImpact').textContent = 
+                ((data.impact.avg_environmental_impact || 0) * 10).toFixed(1) + '/100';
+
+            // Update category chart
+            const categoryData = {
+                labels: data.categories.map(cat => cat.category),
+                datasets: [{
+                    data: data.categories.map(cat => cat.count),
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(139, 92, 246, 0.8)',
+                        'rgba(236, 72, 153, 0.8)',
+                        'rgba(248, 113, 113, 0.8)',
+                        'rgba(107, 114, 128, 0.8)'
+                    ]
+                }]
+            };
+
+            // Update timeline chart
+            const timelineData = {
+                labels: data.implementation_time.map(time => time.time_range),
+                datasets: [{
+                    data: data.implementation_time.map(time => time.count),
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(239, 68, 68, 0.8)'
+                    ]
+                }]
+            };
+
+            // Update status chart
+            const statusData = {
+                labels: data.status.map(status => status.status.charAt(0).toUpperCase() + status.status.slice(1)),
+                datasets: [{
+                    data: data.status.map(status => status.count),
+                    backgroundColor: [
+                        'rgba(245, 158, 11, 0.8)', // Pending
+                        'rgba(16, 185, 129, 0.8)',  // Approved
+                        'rgba(239, 68, 68, 0.8)'    // Rejected
+                    ]
+                }]
+            };
+
+            // Create or update charts
+            if (charts.category) {
+                charts.category.data = categoryData;
+                charts.category.update();
+            } else {
+                const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+                charts.category = new Chart(ctxCategory, {
+                    type: 'pie',
+                    data: categoryData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (charts.timeline) {
+                charts.timeline.data = timelineData;
+                charts.timeline.update();
+            } else {
+                const ctxTimeline = document.getElementById('timelineChart').getContext('2d');
+                charts.timeline = new Chart(ctxTimeline, {
+                    type: 'doughnut',
+                    data: timelineData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            if (charts.status) {
+                charts.status.data = statusData;
+                charts.status.update();
+            } else {
+                const ctxStatus = document.getElementById('statusChart').getContext('2d');
+                charts.status = new Chart(ctxStatus, {
+                    type: 'pie',
+                    data: statusData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Update last refresh time with server timestamp
+            document.getElementById('lastUpdate').textContent = 
+                'Last updated: ' + new Date(data.timestamp).toLocaleString();
+        }
+
+        // Start event source connection
+        connectEventSource();
+
+        // Add cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+    </script>
+</body>
+</html> 
